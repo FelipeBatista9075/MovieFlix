@@ -1,7 +1,7 @@
 package dev.java10x.movieflix.user.mapper;
 
-import dev.java10x.movieflix.user.UserRequest;
-import dev.java10x.movieflix.user.UserResponse;
+import dev.java10x.movieflix.user.request.UserRequest;
+import dev.java10x.movieflix.user.response.UserResponse;
 import dev.java10x.movieflix.user.model.User;
 import lombok.experimental.UtilityClass;
 

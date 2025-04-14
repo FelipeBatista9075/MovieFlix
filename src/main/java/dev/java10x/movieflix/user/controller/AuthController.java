@@ -1,6 +1,10 @@
 package dev.java10x.movieflix.user.controller;
 
-import dev.java10x.movieflix.user.*;
+import dev.java10x.movieflix.user.mapper.UserMapper;
+import dev.java10x.movieflix.user.model.User;
+import dev.java10x.movieflix.user.request.UserRequest;
+import dev.java10x.movieflix.user.response.UserResponse;
+import dev.java10x.movieflix.user.service.UserService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
