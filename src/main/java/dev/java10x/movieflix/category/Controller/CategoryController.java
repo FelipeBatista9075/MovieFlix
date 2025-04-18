@@ -1,52 +1,47 @@
 package dev.java10x.movieflix.category.Controller;
 
-import dev.java10x.movieflix.category.mapper.CategoryMapper;
-import dev.java10x.movieflix.category.model.Category;
 import dev.java10x.movieflix.category.request.CategoryRequest;
 import dev.java10x.movieflix.category.response.CategoryResponse;
-import dev.java10x.movieflix.category.service.CategoryService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-@RestController
-@RequestMapping("/movieflix/category")
-public class CategoryController {
+@Tag(name = "Category", description = "Recurso responsavel pelo gerenciamento de categorias")
+public interface CategoryController {
 
-    private final CategoryService service;
+    @Operation(summary = "Lista categorias", description = "Metodo responsavel por listar categorias",
+        security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Retorna lista de categorias",
+        content = @Content(array = @ArraySchema(schema = @Schema(implementation = CategoryResponse.class))))
+    public ResponseEntity<List<CategoryResponse>> getAllCategories();
 
-    public CategoryController(CategoryService service) {
-        this.service = service;
-    }
+    @Operation(summary = "Busca categoria por id", description =  "Metodo responsavel por buscar categorias por id",
+        security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Categoria encontrada com sucesso",
+        content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Categoria nao encontrada", content = @Content())
+    public ResponseEntity<CategoryResponse> getByCategoryId(@PathVariable Long id);
 
-    @GetMapping()
-    public ResponseEntity<List<CategoryResponse>> getAllCategories(){
-        List<Category> categories = service.getAllCategories();
-        return ResponseEntity.ok(categories.stream()
-                .map(CategoryMapper::toCategoryResponse)
-                .toList());
-    }
+    @Operation(summary = "Salva categoria", description = "Metodo responsavel por salvar categoria",
+        security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "201", description = "Categoria salva com sucesso",
+        content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
+    public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest request);
 
-    @GetMapping("/{id}")
-    public ResponseEntity<CategoryResponse> getByCategoryId(@PathVariable Long id) {
-        return service.getByCategoryId(id)
-                .map(category -> ResponseEntity.ok().body(CategoryMapper.toCategoryResponse(category)))
-                .orElse(ResponseEntity.notFound().build());
-    }
-
-    @PostMapping
-    public ResponseEntity<CategoryResponse> saveCategory(@Valid @RequestBody CategoryRequest request){
-        Category newCategory = CategoryMapper.toCategory(request);
-        Category category = service.saveCategory(newCategory);
-        return ResponseEntity.status(HttpStatus.CREATED).body(CategoryMapper.toCategoryResponse(category));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteById(@PathVariable Long id){
-        service.deleteById(id);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-    }
+    @Operation(summary = "Deleta categoria por id", description = "Metodo responsavel por deletar categoria por id",
+        security = @SecurityRequirement(name = "BaererAuth"))
+    @ApiResponse(responseCode = "204", description = "categoria deletada com sucesso",
+        content = @Content(schema = @Schema(implementation = CategoryResponse.class)))
+    @ApiResponse(responseCode = "404", description = "categoria nao encontrada",
+        content = @Content())
+    public ResponseEntity<Void> deleteById(@PathVariable Long id);
 }

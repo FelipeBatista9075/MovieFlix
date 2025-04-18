@@ -1,72 +1,59 @@
 package dev.java10x.movieflix.movie.controller;
 
-import dev.java10x.movieflix.movie.mapper.MovieMapper;
-import dev.java10x.movieflix.movie.model.Movie;
 import dev.java10x.movieflix.movie.request.MovieRequest;
 import dev.java10x.movieflix.movie.response.MovieResponse;
-import dev.java10x.movieflix.movie.service.MovieService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.media.ArraySchema;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
-@RestController
-@RequestMapping("/movieflix/movie")
-public class MovieController {
+@Tag(name = "Movie", description = "Recurso responsavel pelo gerenciamento dos filmes")
+public interface MovieController {
 
-    private MovieService service;
+    @Operation(summary = "salvar filme", description = "metodo responsavel por salvar um novo filme",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "201", description = "Filme salvo com sucesso",
+            content = @Content(schema = @Schema(implementation = MovieResponse.class)))
+    ResponseEntity<MovieResponse> save(@Valid @RequestBody MovieRequest request);
 
-    public MovieController(MovieService service) {
-        this.service = service;
-    }
+    @Operation(summary = "Lista de filmes", description = "Busca uma lista de filmes",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200",description = "retorna uma lista de todos  filmes",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MovieResponse.class))))
+    ResponseEntity<List<MovieResponse>> findAll();
 
-    @PostMapping
-    public ResponseEntity<MovieResponse> save(@Valid @RequestBody MovieRequest request){
-        Movie savedMovie = service.save(MovieMapper.toMovie(request));
-        return ResponseEntity.ok(MovieMapper.toMovieResponse(savedMovie));
-    }
+    @Operation(summary = "Buscar filme por id", description = "metodo responsavel por buscar filme por id",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Filme encontrado com sucesso",
+            content = @Content(schema = @Schema(implementation = MovieResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Filme nao encontrado", content = @Content())
+    ResponseEntity<MovieResponse> findById(@PathVariable Long id);
 
-    @GetMapping
-    public ResponseEntity<List<MovieResponse>> findAll(){
-        return ResponseEntity.ok(service.findAll()
-                .stream()
-                .map(MovieMapper::toMovieResponse)
-                .toList());
-    }
-    @GetMapping("/{id}")
-    public ResponseEntity<MovieResponse> findById(@PathVariable Long id){
-        return service.findById(id)
-                .map(movie -> ResponseEntity.ok(MovieMapper.toMovieResponse(movie)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @Operation(summary = "Alterar filme", description = "metodo responsavel por Alterar filmes por id",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200", description = "Filme alterado com sucesso",
+            content = @Content(schema = @Schema(implementation = MovieResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Filme nao encontrado", content = @Content())
+    ResponseEntity<MovieResponse> update(@PathVariable Long id,@Valid @RequestBody MovieRequest request);
 
-    @PutMapping("/{id}")
-    public ResponseEntity<MovieResponse> update(@PathVariable Long id,@Valid @RequestBody MovieRequest request){
-        return service.update(id,MovieMapper.toMovie(request))
-                .map(movie -> ResponseEntity.ok(MovieMapper.toMovieResponse(movie)))
-                .orElse(ResponseEntity.notFound().build());
-    }
+    @Operation(summary = "Lista de filmes por categoria", description = "Busca uma lista de filmes pela categoria",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "200",description = "retorna uma lista de todos  filmes",
+            content = @Content(array = @ArraySchema(schema = @Schema(implementation = MovieResponse.class))))
+    ResponseEntity<List<MovieResponse>> findMoviesByCategoryId(@RequestParam Long category);
 
-    @GetMapping("/search")
-    public ResponseEntity<List<MovieResponse>> findByCategory(@RequestParam Long category){
-        return ResponseEntity.ok(service.findById(category)
-                .stream()
-                .map(MovieMapper::toMovieResponse)
-                .toList());
-
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
-        Optional<Movie> optMovie = service.findById(id);
-        if (optMovie.isPresent()){
-            service.delete(id);
-            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
-        }
-        return  ResponseEntity.notFound().build();
-
-    }
+    @Operation(summary = "Deletar filme", description = "metodo responsavel por Deletar filme por id",
+            security = @SecurityRequirement(name = "BearerAuth"))
+    @ApiResponse(responseCode = "204", description = "Filme deletado com sucesso",
+            content = @Content(schema = @Schema(implementation = MovieResponse.class)))
+    @ApiResponse(responseCode = "404", description = "Filme nao encontrado", content = @Content())
+    ResponseEntity<Void> delete(@PathVariable Long id);
 }

@@ -35,8 +35,8 @@ public class MovieService {
         return repository.findAll();
     }
 
-    public List<Movie> findByCategory(Long categoryById){
-        return repository.findMovieByCategories(List.of(Category.builder().id(categoryById).build()));
+    public List<Movie> findByCategory(Long categoryId) {
+        return repository.findMovieByCategories(List.of(Category.builder().id(categoryId).build()));
     }
 
     public Optional<Movie> findById(Long id){
